@@ -34,22 +34,23 @@ while opcao != '3':
             print(f"Produto encontrado no cache: {produto}")
         else:
             print("Produto não encontrado no cache. Buscando no banco de dados...")
-            cursor.execute("SELECT * FROM produtos WHERE id = %s", (id_produto))
+            cursor.execute(f"SELECT nome,preco FROM produtos WHERE id = {id_produto}")
             resultado = cursor.fetchone()
             if resultado:
+                print(f"Produto encontrado no banco de dados: Nome: {resultado[0]}, Preço: {resultado[1]}")
                 r.hset(id_produto, mapping={
-                    'id': str(resultado[0]),
-                    'nome': resultado[1],
-                    'preco': str(resultado[2])
+                    'nome': resultado[0],
+                    'preco': str(resultado[1])
                 })
                 print(f"Produto adicionado ao cache.")
+                r.expire(id_produto,60)
             else:
                 print("Produto não encontrado no banco de dados.")
     elif opcao == '2':
         produtos_cache = r.keys('*')
         for nome_produto in produtos_cache:
             produto = r.hgetall(nome_produto)
-            print(f"ID: {produto['id']}, Nome: {produto['nome']}, Preço: {produto['preco']}")
+            print(f"Nome: {produto['nome']}, Preço: {produto['preco']}")
     elif opcao == '3':
         print("Saindo do menu de consultas.")
         break
